@@ -1,8 +1,7 @@
 /**
  * 实现简易的Promise
  * 遗留问题：
- * 1.前一个then调用onRejected时，后面的then仍会调用onFulfilled
- * 2.js原生Promise产生的then是微任务
+ * 1.js原生Promise产生的then是微任务
  */
 class MyPromise {
   constructor(callback) {
@@ -20,6 +19,37 @@ class MyPromise {
     } catch (error) {
       this._reject(error)
     }
+  }
+
+  static all(handlers) {
+    return new MyPromise((resolve, reject) => {
+      try {
+        const len = handlers.length
+        let flag = 0
+        const result = new Array(len)
+
+        const addResultItem = (value, index) => {
+          result[index] = value
+          if (++flag === len) {
+            resolve(result)
+          }
+        }
+
+        handlers.forEach((handler, index) => {
+          if (handler instanceof MyPromise) {
+            handler.then(value => {
+              addResultItem(value, index)
+            }, reject)
+          } else if (typeof handler === 'function') {
+            addResultItem(handler(), index)
+          } else {
+            addResultItem(handler, index)
+          }
+        })
+      } catch (error) {
+        reject(error)
+      }
+    })
   }
 
   _resolve(value) {
