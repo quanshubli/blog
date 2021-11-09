@@ -12,3 +12,24 @@ Array.prototype.myReduce = function (callback, initialValue) {
 
   return result
 }
+
+/**
+ * 通过reduce实现runPromiseInSequene
+ */
+function runPromiseInSequeue(promises, initialValue) {
+  return promises.reduce(
+    (chain, promise) => chain.then(promise),
+    Promise.resolve(initialValue)
+  )
+}
+
+/**
+ * 通过reduce实现柯里化
+ * curry(a, b, c)(v) -> c(b(a(v)))
+ */
+function curry() {
+  const funcs = Array.prototype.slice.call(arguments)
+  return function (arg) {
+    return funcs.reduce((accArg, func) => func(accArg), arg)
+  }
+}
