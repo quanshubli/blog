@@ -27,9 +27,12 @@ function runPromiseInSequeue(promises, initialValue) {
  * 通过reduce实现柯里化
  * curry(a, b, c)(v) -> c(b(a(v)))
  */
-function curry() {
+function curry1() {
   const funcs = Array.prototype.slice.call(arguments)
   return function (arg) {
     return funcs.reduce((accArg, func) => func(accArg), arg)
   }
+}
+function curry2(...funcs) {
+  return funcs.reduce((a, b) => (...args) => b(a(...args)))
 }
