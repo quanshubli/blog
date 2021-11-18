@@ -1,11 +1,11 @@
 /**
  * 实现简易的Promise
  * 遗留问题：
- * 1.js原生Promise产生的then是微任务
+ * 1.js原生Promise产生的then是微任务，暂时用setTimeout模拟
  */
 class MyPromise {
   constructor(callback) {
-    this.state = 'pending'
+    this.state = 'pending' // 'pending' | 'fulfilled' | 'rejected'
     this.result = null
 
     this.fulfilledCallbacks = []
@@ -19,6 +19,22 @@ class MyPromise {
     } catch (error) {
       this._reject(error)
     }
+  }
+
+  static catch(callback) {
+    return this.then(null, callback)
+  }
+
+  static resolve(value) {
+    return new MyPromise(resolve => {
+      resolve(value)
+    })
+  }
+
+  static reject(value) {
+    return new MyPromise((resolve, reject) => {
+      reject(value)
+    })
   }
 
   static all(handlers) {
@@ -52,25 +68,51 @@ class MyPromise {
     })
   }
 
-  _resolve(value) {
-    if (this.state === 'pending') {
-      this.state = 'fulfilled'
-      this.result = value
+  static race(handlers) {
+    return new MyPromise((resolve, reject) => {
+      try {
+        handlers.forEach(handler => {
+          if (handler instanceof MyPromise) {
+            handler.then(resolve, reject)
+          } else if (typeof handler === 'function') {
+            resolve(handler())
+          } else {
+            resolve(handler)
+          }
+        })
+      } catch (error) {
+        reject(error)
+      }
+    })
+  }
 
-      this.fulfilledCallbacks.reduce((result, cb) => cb(result), this.result)
-    }
+  _resolve(value) {
+    setTimeout(() => {
+      if (this.state === 'pending') {
+        this.state = 'fulfilled'
+        this.result = value
+
+        this.fulfilledCallbacks.forEach(item => item(this.result))
+      }
+    })
   }
 
   _reject(value) {
-    if (this.state === 'pending') {
-      this.state = 'rejected'
-      this.result = value
+    setTimeout(() => {
+      if (this.state === 'pending') {
+        this.state = 'rejected'
+        this.result = value
 
-      this.rejectedCallbacks.reduce((result, cb) => cb(result), this.result)
-    }
+        this.rejectedCallbacks.forEach(item => item(this.result))
+      }
+    })
   }
 
   then(onFulfilled, onRejected) {
+    // 如果传入的不是函数，则穿透到下一个then
+    onFulfilled = typeof onFulfilled === 'function' ? onFulfilled : data => data
+    onRejected = typeof onRejected === 'function' ? onRejected : error => { throw error }
+
     // 用const无法在thenPromise内部使用自身变量
     let thenPromise
 
@@ -92,9 +134,13 @@ class MyPromise {
       }
 
       if (this.state === 'fulfilled') {
-        handle(onFulfilled)
+        setTimeout(() => {
+          handle(onFulfilled)
+        })
       } else if (this.state === 'rejected') {
-        handle(onRejected)
+        setTimeout(() => {
+          handle(onRejected)
+        })
       } else {
         this.fulfilledCallbacks.push(handle.bind(this, onFulfilled))
         this.rejectedCallbacks.push(handle.bind(this, onRejected))
