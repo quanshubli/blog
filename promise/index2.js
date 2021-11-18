@@ -56,3 +56,5 @@ MyPromise.prototype.then = function(onFulfilled, onRejected) {
     this.onRejectedFuncs.push(onRejected)
   }
 }
+
+// test
