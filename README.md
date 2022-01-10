@@ -2,6 +2,8 @@
 
 个人技术学习博客
 
+[javascript-继承](https://github.com/quanshubli/blog/blob/main/articles/javascript/%E7%BB%A7%E6%89%BF.md)
+
 [javascript-原型](https://github.com/quanshubli/blog/blob/main/articles/javascript/%E5%8E%9F%E5%9E%8B.md)
 
 [理解 Redux](https://github.com/quanshubli/blog/blob/main/articles/Redux/redux%E5%8E%9F%E7%90%86.md)
